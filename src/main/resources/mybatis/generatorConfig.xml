@@ -1,0 +1,97 @@
+<!DOCTYPE generatorConfiguration PUBLIC
+        "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+    <classPathEntry
+            location="C:\Users\12057\.m2\repository\mysql\mysql-connector-java\8.0.19\mysql-connector-java-8.0.19.jar"/>
+
+    <context id="mysql-mall" targetRuntime="MyBatis3" defaultModelType="flat">
+        <!--每次都覆盖原有xml mapper-->
+        <plugin type="org.mybatis.generator.plugins.UnmergeableXmlMappersPlugin"/>
+
+        <!--关闭注释-->
+        <commentGenerator>
+            <property name="suppressAllComments" value="true"/>
+        </commentGenerator>
+
+        <!--数据库连接-->
+        <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
+                        connectionURL="jdbc:mysql://localhost:3306/nowcoder_community?useUnicode=true&amp;characterEncoding
+                        =utf-8&amp;useSSL=false"
+                        userId="root" password="root"/>
+
+        <!-- java类型处理器
+        用于处理DB中的类型到Java中的类型，默认使用JavaTypeResolverDefaultImpl；
+        注意一点，默认会先尝试使用Integer，Long，Short等来对应DECIMAL和 NUMERIC数据类型；
+         -->
+        <javaTypeResolver type="org.mybatis.generator.internal.types.JavaTypeResolverDefaultImpl">
+            <!--
+                true：使用BigDecimal对应DECIMAL和 NUMERIC数据类型
+                false：默认,
+                    scale>0;length>18：使用BigDecimal;
+                    scale=0;length[10,18]：使用Long；
+                    scale=0;length[5,9]：使用Integer；
+                    scale=0;length<5：使用Short；
+             -->
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+
+
+        <!--生成实体类-->
+        <!-- targetPackage：生成的实体类所在的包 -->
+        <!-- targetProject：生成的实体类所在的硬盘位置 -->
+        <!-- DataObject 类存放位置 -->
+        <javaModelGenerator targetPackage="com.lvhao.nowcodercommunity.entity"
+                            targetProject="src/main/java">
+            <property name="enableSubPackages" value="true"/>
+            <!--            <property name="trimStrings" value="true"/>-->
+        </javaModelGenerator>
+
+        <!--生成Mapper.xml-->
+        <sqlMapGenerator targetPackage="mapper"
+                         targetProject="src/main/resources/">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+        <!--生成Mapper接口-->
+        <javaClientGenerator type="XMLMAPPER"
+                             targetPackage="com.lvhao.nowcodercommunity.dao"
+                             targetProject="src/main/java">
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <!--配置要生成pojo,mapper,...的数据库表-->
+        <!--domainObjectName: 配置生成的domain object(pojo)的名字——即Order, 进而也就对应OrderMapper-->
+        <!--        <table tableName="mall_category" domainObjectName="Category" enableCountByExample="false" enableDeleteByExample="false" enableUpdateByExample="false" enableSelectByExample="false"/>-->
+        <!--        <table tableName="mall_order" domainObjectName="Order" enableCountByExample="false" enableDeleteByExample="false" enableUpdateByExample="false" enableSelectByExample="false"/>-->
+        <!--        <table tableName="mall_user" domainObjectName="User" enableCountByExample="false" enableDeleteByExample="false" enableUpdateByExample="false" enableSelectByExample="false"/>-->
+        <!--        <table tableName="mall_order_item" domainObjectName="OrderItem" enableCountByExample="false" enableDeleteByExample="false" enableUpdateByExample="false" enableSelectByExample="false"/>-->
+<!--        <table tableName="mall_product" domainObjectName="Product" enableCountByExample="false" enableDeleteByExample="false" enableUpdateByExample="false" enableSelectByExample="false">-->
+<!--            &lt;!&ndash;将db中类型为text的两列看作varchar类型，否则mybatis generator会对它俩特殊处理&ndash;&gt;-->
+<!--            <columnOverride column="sub_images" jdbcType="VARCHAR"/>-->
+<!--            <columnOverride column="detail" jdbcType="VARCHAR"/>-->
+<!--        </table>-->
+
+        <table tableName="user" domainObjectName="User" enableCountByExample="false" enableDeleteByExample="false"
+               enableUpdateByExample="false" enableSelectByExample="false"/>
+
+        <table tableName="discuss_post" domainObjectName="DiscussPost" enableCountByExample="false" enableDeleteByExample="false" enableUpdateByExample="false" enableSelectByExample="false">
+            <!--将db中类型为text的两列看作varchar类型，否则mybatis generator会对它俩特殊处理-->
+            <columnOverride column="content" jdbcType="VARCHAR"/>
+        </table>
+
+        <table tableName="comment" domainObjectName="Comment" enableCountByExample="false" enableDeleteByExample="false" enableUpdateByExample="false" enableSelectByExample="false">
+            <!--将db中类型为text的两列看作varchar类型，否则mybatis generator会对它俩特殊处理-->
+            <columnOverride column="content" jdbcType="VARCHAR"/>
+        </table>
+
+        <table tableName="message" domainObjectName="Message" enableCountByExample="false" enableDeleteByExample="false" enableUpdateByExample="false" enableSelectByExample="false">
+            <!--将db中类型为text的两列看作varchar类型，否则mybatis generator会对它俩特殊处理-->
+            <columnOverride column="content" jdbcType="VARCHAR"/>
+        </table>
+
+        <table tableName="login_ticket" domainObjectName="LoginTicket" enableCountByExample="false" enableDeleteByExample="false"
+               enableUpdateByExample="false" enableSelectByExample="false"/>
+
+    </context>
+</generatorConfiguration>
