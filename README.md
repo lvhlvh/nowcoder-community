@@ -12,8 +12,17 @@
 用户登录、记住登录状态
 - 帖子模块: `DiscussPostController, DiscussPostService, DiscussPostMapper`，主要完成帖子的发布
 - 评论模块: `CommentController, CommentService, CommentMapper`, 主要完成帖子评论的发布
+- `entity`: 实体类
 - `form`: 利用`javax.validation`提供的注解进行参数验证
 - `interceptor`: 拦截器
     - `UserLoginInterceptor`: 用于判断用户登录状态的拦截器
 - `aspect`: AOP切面
     - `ServiceLogAspect`: 统一记录日志
+- `util`: 一些工具类
+    - `SensitiveWordsFilter`: 基于前缀树的敏感词过滤器
+    - `MailClient`: 用于发送邮件的工具类
+    - `CommonUtils`
+    - `CookieUtils`
+- `annotation`:
+    - `LoginRequired`: 该注解和`UserLoginInterceptor`搭配用于实现用户登录状态的校验,
+    Controller中加上该注解的方法要求用户登录才能访问。
