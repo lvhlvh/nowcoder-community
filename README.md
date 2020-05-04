@@ -8,6 +8,9 @@
 - 完成了帖子发表和评论模块, 基于前缀树实现了敏感词的过滤
 - 使用AOP实现了统一的日志记录和异常处理
 
+<img src="pic.png" style="zoom: 70%"/>
+<img src="pic2.png" style="zoom: 70%"/>
+
 ### 项目模块
 
 - 用户模块: `UserController, UserService, UserMapper`, 涉及的功能包括: 用户注册、邮箱验证、
