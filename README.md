@@ -8,8 +8,8 @@
 - 完成了帖子发表和评论模块, 基于前缀树实现了敏感词的过滤
 - 使用AOP实现了统一的日志记录和异常处理
 
-![](./pic.png)
-![](./pic2.png)
+![](https://raw.githubusercontent.com/lvhlvh/nowcoder-community/master/pic.jpg)
+![](https://raw.githubusercontent.com/lvhlvh/nowcoder-community/master/pic2.jpg)
 
 ### 项目模块
 
