@@ -4,6 +4,7 @@ import com.lvhao.nowcodercommunity.constant.CommentConstants;
 import com.lvhao.nowcodercommunity.dao.CommentMapper;
 import com.lvhao.nowcodercommunity.dao.DiscussPostMapper;
 import com.lvhao.nowcodercommunity.entity.Comment;
+import com.lvhao.nowcodercommunity.util.SensitiveWordsFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -19,6 +20,8 @@ public class CommentService {
     private CommentMapper commentMapper;
     @Autowired
     private DiscussPostMapper discussPostMapper;
+    @Autowired
+    private SensitiveWordsFilter sensitiveWordsFilter;
 
     public List<Comment> getCommentsByEntityOnePage(int entityType, int entityId, int offset, int limit) {
         return commentMapper.selectCommentsByEntityOnePage(entityType, entityId, offset, limit);
@@ -37,7 +40,7 @@ public class CommentService {
         // Step 1和Step2要么都做，要么都不做
 
         // Step 1: 往comment表插入数据
-        comment.setContent(HtmlUtils.htmlEscape(comment.getContent()));
+        comment.setContent(sensitiveWordsFilter.filterSensitiveWords(HtmlUtils.htmlEscape(comment.getContent())));
         int rows = commentMapper.insert(comment);
 
         // Step 2: 更新discuss_post表的评论数量字段

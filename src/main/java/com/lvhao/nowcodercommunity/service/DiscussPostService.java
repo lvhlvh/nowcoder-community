@@ -3,7 +3,7 @@ package com.lvhao.nowcodercommunity.service;
 import com.lvhao.nowcodercommunity.dao.DiscussPostMapper;
 import com.lvhao.nowcodercommunity.dao.UserMapper;
 import com.lvhao.nowcodercommunity.entity.DiscussPost;
-import com.lvhao.nowcodercommunity.entity.User;
+import com.lvhao.nowcodercommunity.util.SensitiveWordsFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
@@ -17,6 +17,8 @@ public class DiscussPostService {
     private DiscussPostMapper discussPostMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private SensitiveWordsFilter sensitiveWordsFilter;
 
     public List<Map<String, Object>> getDiscussPostByUserIdOnePage(int userId, int offset, int limit) {
         List<DiscussPost> discussPosts = discussPostMapper.selectByUserIdOnePage(userId, offset, limit);
@@ -41,8 +43,8 @@ public class DiscussPostService {
             throw new IllegalArgumentException("discussPost不能为空!");
         }
 
-        discussPost.setTitle(HtmlUtils.htmlEscape(discussPost.getTitle()));
-        discussPost.setContent(HtmlUtils.htmlEscape(discussPost.getContent()));
+        discussPost.setTitle(sensitiveWordsFilter.filterSensitiveWords(HtmlUtils.htmlEscape(discussPost.getTitle())));
+        discussPost.setContent(sensitiveWordsFilter.filterSensitiveWords(HtmlUtils.htmlEscape(discussPost.getContent())));
         discussPost.setType(0); // 普通
         discussPost.setStatus(0); // 正常
         discussPost.setCreateTime(new Date());
