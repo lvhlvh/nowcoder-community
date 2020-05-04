@@ -8,8 +8,8 @@
 - 完成了帖子发表和评论模块, 基于前缀树实现了敏感词的过滤
 - 使用AOP实现了统一的日志记录和异常处理
 
-<img src="pic.png" style="zoom: 70%"/>
-<img src="pic2.png" style="zoom: 70%"/>
+![](pic.png)
+![](pic2.png)
 
 ### 项目模块
 
