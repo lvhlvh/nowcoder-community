@@ -1,7 +1,5 @@
 package com.lvhao.nowcodercommunity.entity;
 
-import lombok.Data;
-
 /**
  * 封装分页相关的信息
  */

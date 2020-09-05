@@ -123,8 +123,8 @@ public class SensitiveWordsFilter {
             }
 
             // 检查下级节点
-            // 1. 下级节点是null
             cur = cur.next.get(ch);
+            // 1. 下级节点是null
             if (cur == null) {
                 sb.append(text.charAt(begin));
                 begin++;
