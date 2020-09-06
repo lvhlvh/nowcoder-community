@@ -44,6 +44,19 @@
         </if>
     </select>
 
+    <select id="selectDiscussPostCount" resultType="java.lang.Integer">
+        select count(*) from discuss_post;
+    </select>
+
+    <select id="selectOnePage" resultType="com.lvhao.nowcodercommunity.entity.DiscussPost">
+        select
+        <include refid="Base_Column_List"/>
+        from discuss_post
+        order by `type` desc, create_time desc
+        limit #{offset}, #{limit}
+    </select>
+
+
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
         delete
         from discuss_post

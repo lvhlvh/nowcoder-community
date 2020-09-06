@@ -61,4 +61,22 @@ public class DiscussPostService {
     public int updateCommentCount(int id, int newCommentCount) {
         return discussPostMapper.updateCommentCount(id, newCommentCount);
     }
+
+    public int getTotalDiscussPostCount() {
+        return discussPostMapper.selectDiscussPostCount();
+    }
+
+    public List<Map<String, Object>> getDiscussPostOnePage(int offset, int limit) {
+        List<DiscussPost> discussPosts = discussPostMapper.selectOnePage(offset, limit);
+        List<Map<String, Object>> discussPostsWithUser = new ArrayList<>();
+        if (discussPosts != null) {
+            discussPosts.forEach(discussPost -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("post", discussPost);
+                map.put("user", userMapper.selectByPrimaryKey(discussPost.getUserId()));
+                discussPostsWithUser.add(map);
+            });
+        }
+        return discussPostsWithUser;
+    }
 }

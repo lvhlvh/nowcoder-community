@@ -102,7 +102,7 @@ public class Page {
 
 <img src="https://raw.githubusercontent.com/lvhlvh/pictures/master/img/20200905231203.png" style="zoom:80%;" />
 
-上述代码根据后端传入的Page对象获取**起始页码**(page.from)、**终止页码**(page.to)、**末页页码**等信息。
+上述代码根据后端来的Page对象获取**起始页码**(page.from)、**终止页码**(page.to)、**总页数**(page.total)等信息。
 
 当点击页码按钮时，会以`http://127.0.0.1:8080/community/index?current=页码`形式的url访问，后端获取url参数中的页码，进而取到指定页的记录。
 
@@ -111,16 +111,30 @@ public class Page {
 ```java
 @GetMapping({"/", "/index"})
 public String getIndexPage(Model model, Page page) {
-    // getIndexPage()方法被调用前，Spring MVC会自动实例化Model和Page, 并将Page注入Model,
-    // 所以, 下面无需我们显示地执行model.addAttribute(..., page)
-    
-    // 1. 首先，获取帖子表总记录数，总记录数用来计算
+    // 1. 首先，获取帖子表总记录数，总记录数可以用来计算总页数
     page.setRows(discussPostService.getDiscussPostCount());
     page.setPath("/index");
 
+    // 2. 根据offset和limit从数据库查询一页数据
     List<Map<String, Object>> posts = discussPostService.getDiscussPostOnePage(page.getOffset(), page.getLimit());
     model.addAttribute("posts", posts);
     return "index";
 }
 ```
+
+1. 前端传入的url格式为`http://127.0.0.1:8080/community/index?current=页码`，传入的当页码信息会被封装到Page对象中（即`page.current`）
+
+2. 从discuss_post表获取帖子总数，根据帖子总数可以计算**页面总数**。对应的SQL查询语句为：
+
+   ```mysql
+   select count(*) from discuss_post
+   ```
+
+3. 然后根据页码计算offset，从数据库中取出对应页面的帖子，对应的SQL语句为：
+
+   ```mysql
+    select ... from discuss_post order by `type` desc, create_time desc limit #{offset}, #{limit}
+   ```
+
+   
 

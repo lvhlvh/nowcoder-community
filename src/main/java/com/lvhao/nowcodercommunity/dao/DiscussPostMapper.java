@@ -24,4 +24,8 @@ public interface DiscussPostMapper {
     int updateByPrimaryKey(DiscussPost record);
 
     int updateCommentCount(int id, int newCommentCount);
+
+    int selectDiscussPostCount();
+
+    List<DiscussPost> selectOnePage(Integer offset, Integer limit);
 }

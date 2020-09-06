@@ -17,14 +17,24 @@ public class HomeController {
     @Autowired
     private DiscussPostService discussPostService;
 
+//    @GetMapping({"/", "/index"})
+//    public String getIndexPage(Model model, Page page) {
+//        // getIndexPage()方法被调用前，Spring MVC会自动实例化Model和Page, 并将Page注入Model,
+//        // 所以, 下面无需我们显示地执行model.addAttribute(..., page)
+//        page.setRows(discussPostService.getDiscussPostCountByUserId(0));
+//        page.setPath("/index");
+//
+//        List<Map<String, Object>> posts = discussPostService.getDiscussPostByUserIdOnePage(0, page.getOffset(), page.getLimit());
+//        model.addAttribute("posts", posts);
+//        return "index";
+//    }
+
     @GetMapping({"/", "/index"})
     public String getIndexPage(Model model, Page page) {
-        // getIndexPage()方法被调用前，Spring MVC会自动实例化Model和Page, 并将Page注入Model,
-        // 所以, 下面无需我们显示地执行model.addAttribute(..., page)
-        page.setRows(discussPostService.getDiscussPostCountByUserId(0));
+        page.setRows(discussPostService.getTotalDiscussPostCount());
         page.setPath("/index");
 
-        List<Map<String, Object>> posts = discussPostService.getDiscussPostByUserIdOnePage(0, page.getOffset(), page.getLimit());
+        List<Map<String, Object>> posts = discussPostService.getDiscussPostOnePage(page.getOffset(), page.getLimit());
         model.addAttribute("posts", posts);
         return "index";
     }
