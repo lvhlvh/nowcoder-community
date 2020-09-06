@@ -119,7 +119,7 @@ Extra         | Using filesort
 
 那么，如何利用上我们建立的`(type, creat_time)`索引，利用上索引带来的排序特性，同时尽量避免不必要的回表操作，最终提升性能呢？
 
-对于这一问题，《高性能MySQL》中提出了一种叫做 “**延迟关联**”的解决方案，
+对于这一问题，《高性能MySQL》中提出了一种叫做 “**延迟关联**”的解决方案，该方案借助一个**子查询**来进行优化：
 
 ```java
 mysql root@(none):nowcoder_community> select * from discuss_post dp1 inner join (select id from discuss_post order by type desc, create_time desc limit 100000, 10) dp2 on dp1.id = dp2.id;
@@ -143,7 +143,7 @@ Time: 0.071s
 
   - 对于派生表中的每一行，通过其id字段`dp2.id`去表dp1的**主键索引**中进行查找，最终找到所需的10条记录。这里涉及两个表的连接，驱动表是`<derived2>`，被驱动表是`dp1`，两者根据`id`字段进行连接，由于被驱动表的`id`字段上存在索引，因此两表join时采用的**join算法**应该是**Index Nested Loop Join**，只需要根据驱动表中的id字段10次查找被驱动表的索引树即可，原理如下图所示，效率还算比较高，关于join算法可以参考[MySQL Join算法与调优白皮书](https://blog.csdn.net/orangleliu/article/details/72850659)：
 
-    <img src="C:\Users\Lv Hao\AppData\Roaming\Typora\typora-user-images\image-20200905195027829.png" alt="image-20200905195027829" style="zoom:80%;" />
+    <img src="https://raw.githubusercontent.com/lvhlvh/pictures/master/img/20200905215746.png" style="zoom:80%;" />
 
 
 

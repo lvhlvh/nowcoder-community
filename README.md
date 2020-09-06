@@ -10,4 +10,5 @@
 
 ## 项目要点
 
-- [首页帖子分页的优化](pagination.md)
+- [首页帖子分页的实现](pagination-implementation.md)
+- [首页帖子分页的优化](pagination-optimization.md)
