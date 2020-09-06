@@ -1,3 +1,15 @@
+* [版本1: 没有任何优化](#%E7%89%88%E6%9C%AC1-%E6%B2%A1%E6%9C%89%E4%BB%BB%E4%BD%95%E4%BC%98%E5%8C%96)
+* [版本2: 在(type, create\_time)上建索引](#%E7%89%88%E6%9C%AC2-%E5%9C%A8type-create_time%E4%B8%8A%E5%BB%BA%E7%B4%A2%E5%BC%95)
+* [版本3: 延迟关联](#%E7%89%88%E6%9C%AC3-%E5%BB%B6%E8%BF%9F%E5%85%B3%E8%81%94)
+* [版本4: 末页优化](#%E7%89%88%E6%9C%AC4-%E6%9C%AB%E9%A1%B5%E4%BC%98%E5%8C%96)
+* [版本5: 优化select count(\*)](#%E7%89%88%E6%9C%AC5-%E4%BC%98%E5%8C%96select-count)
+  * [使用行数的估计值](#%E4%BD%BF%E7%94%A8%E8%A1%8C%E6%95%B0%E7%9A%84%E4%BC%B0%E8%AE%A1%E5%80%BC)
+  * [对行数做缓存](#%E5%AF%B9%E8%A1%8C%E6%95%B0%E5%81%9A%E7%BC%93%E5%AD%98)
+* [总结](#%E6%80%BB%E7%BB%93)
+* [参考](#%E5%8F%82%E8%80%83)
+
+
+
 用户帖子表：
 
 ```mysql
@@ -144,6 +156,82 @@ Time: 0.071s
   - 对于派生表中的每一行，通过其id字段`dp2.id`去表dp1的**主键索引**中进行查找，最终找到所需的10条记录。这里涉及两个表的连接，驱动表是`<derived2>`，被驱动表是`dp1`，两者根据`id`字段进行连接，由于被驱动表的`id`字段上存在索引，因此两表join时采用的**join算法**应该是**Index Nested Loop Join**，只需要根据驱动表中的id字段10次查找被驱动表的索引树即可，原理如下图所示，效率还算比较高，关于join算法可以参考[MySQL Join算法与调优白皮书](https://blog.csdn.net/orangleliu/article/details/72850659)：
 
     <img src="https://raw.githubusercontent.com/lvhlvh/pictures/master/img/20200905215746.png" style="zoom:80%;" />
+  
+## 版本4: 末页优化
 
+使用了延迟关联的版本3已经比之前的版本性能好很多了，但是仍然存在一个明显的问题：随着limit子句的offset值的增大，查询所需要的时间将会越来越大。
 
+仍旧是对于上面的SQL语句：
 
+```mysql
+select * from discuss_post dp1 inner join (select id from discuss_post order by type desc, create_time desc limit ?, 10) dp2 on dp1.id = dp2.id;
+```
+
+分别控制offset为100000， 500000， 1000000， 2000000，3000000所得的运行时间如下：
+
+```bash
+100000 0.057s
+500000 0.248s
+1000000  0.411s
+2000000  0.870s
+3000000  1.611s
+```
+
+可见，随着offset的增加，查询所需的时间越来越大。根据用户的一般习惯，访问开头几页和末尾几页的概率比较大，而访问中间的页码的概率比较小。因此，有必要对靠近末尾的分页查询进行优化。
+
+可以采取**如下的优化措施**：判断当前的offset是不是超过了总记录数的**一半**：
+
+- 如果不是，就正向查询
+
+  ```mysql
+  select * from discuss_post dp1 inner join (select id from discuss_post order by type desc, create_time desc limit ?, 10) dp2 on dp1.id = dp2.id;
+  ```
+
+- 如果是，就反向查询
+
+  ```mysql
+  select * from discuss_post dp1 inner join (select id from discuss_post order by type asc, create_time asc limit 总数-10-?, 10) dp2 on dp1.id = dp2.id order by type desc, create_time desc;
+  ```
+
+## 版本5: 优化select count(*)
+
+在之前的分页实现中，为了得到**总页数**，需要先使用`select count(*)`从数据库中查出**帖子总数**，对应的SQL语句如下：
+
+```java
+mysql root@(none):nowcoder_community> select count(*) from discuss_post;
++----------+
+| count(*) |
++----------+
+| 3562966  |
++----------+
+1 row in set
+Time: 0.904s
+```
+
+InnoDB引擎和MyISAM不一样，它不会缓存记录总数，因此上述语句在**每次每个用户请求一个页面**时都会执行，因此总体来说开销还是比较大的。那么如何优化呢？可以有如下的方式。
+
+### 使用行数的估计值
+
+在大多数场景下，用户并不在意具体有多少条记录以及具体有多少页，就连Google的搜索结果也没有提供准确的页数，因此我们没必要每次都使用开销很大的`select count(*)`来获得准确的行数，可以使用`show table status`和`explain`等命令来获取行数的估计值，由于估计值可能小于实际的行数，我们只需要把行数估计值加上一定数量作为总行数即可。
+
+使用该解决方案，由于最终使用的总行数要大于等于实际的行数，所以可能出现最后几页没有结果的现象，不过这在一般场景下也是可以接受的。
+
+### 对行数做缓存
+
+将帖子表的总行数缓存到Redis等缓存中，然后每次插入或删除更新缓存中的总行数。
+
+## 总结
+
+以上主要对分页查询中的两点作出了优化：
+
+- 查询贴子总数的`select count(*)`
+- 查询一页帖子的`select ... limit ...`
+
+## 参考
+
+- 《高性能MySQL》
+- [MySQL 分页查询优化思路](http://claude-ray.com/2019/03/11/mysql-pagination/)
+- [Efficient Pagination Using MySQL ](https://www.slideshare.net/Eweaver/efficient-pagination-using-mysql)
+- [Four ways to optimize paginated displays](https://www.percona.com/blog/2008/09/24/four-ways-to-optimize-paginated-displays/)
+- [Optimized Pagination using MySQL](https://www.xarg.org/2011/10/optimized-pagination-using-mysql/)
+- [MySQL: Fastest way to count number of rows](https://stackoverflow.com/questions/5060366/mysql-fastest-way-to-count-number-of-rows)
