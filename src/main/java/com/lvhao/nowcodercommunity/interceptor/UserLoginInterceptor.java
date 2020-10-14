@@ -49,6 +49,9 @@ public class UserLoginInterceptor implements HandlerInterceptor {
                     session.setAttribute(UserConstants.USER_IN_SESSION,
                             userService.getUserById(loginTicket.getUserId()));
                 }
+            } else {
+                HttpSession session = request.getSession();
+                session.removeAttribute(UserConstants.USER_IN_SESSION);
             }
         }
 
